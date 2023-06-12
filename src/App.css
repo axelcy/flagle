@@ -40,3 +40,18 @@
 .read-the-docs {
   color: #888;
 }
+img {
+  height: 21rem;
+  border: lightcoral outset 6px;
+} 
+
+.app-container{
+  display:  flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.app-container > button {
+  width: fit-content;
+  align-self: center;
+}
