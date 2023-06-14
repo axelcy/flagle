@@ -19,8 +19,10 @@ function App() {
   const handleSubmit = () => {
     if (!banderaActual) return
     form.current.preventDefault()
-    setPuntos(prevState => prevState + timeRemaining)
-    if (mainInput.current.value == banderaActual.name) setEnJuego(false)
+    if (mainInput.current.value == banderaActual.name) {
+      setPuntos(prevState => prevState + timeRemaining)
+      setEnJuego(false)
+    }
   }
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && enJuego) {
