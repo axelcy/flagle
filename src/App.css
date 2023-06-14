@@ -20,3 +20,21 @@ img {
   width: fit-content;
   align-self: center;
 }
+
+input[type="range"]::-webkit-slider-thumb {
+  /* visibility: visible; */
+  background-color: red !important;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  /* height: 5px; */
+}
+
+.progress{
+  height: 30px !important;
+  
+}
+
+.progress-bar h6{
+  margin-bottom: 0;
+}
