@@ -1,42 +1,74 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button, Form } from 'react-bootstrap' 
 import './App.css'
+import useFetch from './hooks/useFetch'
 function App() {
+  const time = 10 // 30
+  const intervalTime = 0.001
+
   const [listaBanderas, setListaBanderas] = useState([])
   const [banderaActual, setBanderaActual] = useState()
-  const [time, setTime] = useState(5)
   const [enJuego, setEnJuego] = useState(true)
-  
-  const handleChange = e => setTime(e.target.value)
-  const rendirse = () => setEnJuego(false)
+  const [timeRemaining, setTimeRemaining] = useState(time)
+  const [puntos, setPuntos] = useState(0)
+  const form = useRef()
+  const mainInput = useRef()
+
+  const handleSurrender = () => setEnJuego(false)
+  // const handleChange = e => setTime(e.target.value)
+  const handleSubmit = () => {
+    if (!banderaActual) return
+    form.current.preventDefault()
+    setPuntos(prevState => prevState + timeRemaining)
+    if (mainInput.current.value == banderaActual.name) setEnJuego(false)
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && enJuego) {
+      e.preventDefault()
+      handleSubmit(e)
+    }
+  })
+
   const elegirBandera = (num) => {
-    if (!isNaN(parseInt(num))) setBanderaActual(num)
+    if (num) setBanderaActual(num)
     else setBanderaActual(listaBanderas[Math.floor(Math.random() * listaBanderas.length)])
     setEnJuego(true)
-    setTimeout(() => {
-      setEnJuego(false)
-    }, time * 1000)
   }
+
   useEffect(() => async() => {
-    try {
-      const response = await fetch('https://countriesnow.space/api/v0.1/countries/flag/images')
-      const {data} = await response.json()
-      setListaBanderas(data)
-      elegirBandera(data[Math.floor(Math.random() * data.length)])
-    } catch (err) {
-      console.log(err)
-      throw new Error('No se pudo hacer el fetch')
-    }
+    const {data} = await useFetch()
+    setListaBanderas(data)
+    elegirBandera(data[Math.floor(Math.random() * data.length)])
   }, [])
+
+  useEffect(() => {
+    if (enJuego) {
+      setTimeRemaining(time)
+      var timeOut = setTimeout(() => setEnJuego(false), time * 1000)
+      var interval = setInterval(() => setTimeRemaining(prevState => prevState - intervalTime), intervalTime * 1000);
+    }
+    else {
+      interval = clearInterval(interval)
+      setTimeRemaining(0)
+    }
+  }, [enJuego])
+
+  useEffect(() => { if (timeRemaining <= 0) setEnJuego(false) }, [timeRemaining])
+
   return (
     <section className='app-container'>
       <h1>hola weones</h1>
-      <Form.Label>Time</Form.Label>
-      <Form.Control type="text" placeholder="First name" value={time} disabled={enJuego} onChange={handleChange}/>
-      {banderaActual && <img src={banderaActual.flag} alt={banderaActual.name} />}
-      {enJuego && <Button variant="primary" onClick={rendirse}>Rendirse</Button>}
-      <Button variant='secondary' onClick={elegirBandera} >Recargar</Button>
-      <h3>{!enJuego && 'Respuesta: ' + banderaActual.name}</h3>
+      <Form onSubmit={handleSubmit} ref={form}>
+        <Form.Label>Tiempo</Form.Label>
+        {/* <Form.Control type="text" placeholder="First name" value={time} disabled={enJuego} onChange={handleChange}/> */}
+        <Form.Range value={timeRemaining} max={time} min={0 + intervalTime} disabled step={intervalTime} />
+        {banderaActual && <img src={banderaActual.flag} alt={banderaActual.name} />}
+        {banderaActual && <Form.Control type="text" placeholder={banderaActual.name} ref={mainInput}/>}
+        {enJuego && <Button variant="primary" onClick={handleSurrender}>Rendirse</Button>}
+        <Button variant='secondary' onClick={() => elegirBandera()} >Recargar</Button>
+        <Button variant='secondary' type='submit'>Submit</Button>
+        <h3>{!enJuego && 'Respuesta: ' + banderaActual.name}</h3>
+      </Form>
     </section>
   )
 }
