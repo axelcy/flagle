@@ -3,7 +3,7 @@ import { Button, Form, ProgressBar } from 'react-bootstrap'
 import './App.css'
 import useFetch from './hooks/useFetch'
 function App() {
-  const time = 30 // 30
+  const time = 5 // 30
   const intervalTime = 0.01
 
   const [listaBanderas, setListaBanderas] = useState([])
@@ -25,12 +25,12 @@ function App() {
       setEnJuego(false)
     }
   }
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && enJuego) {
-      e.preventDefault()
-      handleSubmit(e)
-    }
-  })
+  // document.addEventListener('keydown', e => {
+  //   if (e.key === 'Enter' && enJuego) {
+  //     e.preventDefault()
+  //     handleSubmit(e)
+  //   }
+  // })
 
   const elegirBandera = (num) => {
     if (num) setBanderaActual(num)
@@ -50,16 +50,19 @@ function App() {
     if (enJuego) {
       setTimeRemaining(time)
       setTimerId(setTimeout(() => setEnJuego(false), time * 1000))
-      setIntervalId(setInterval(() => {
+      if (timeRemaining > 0 && !intervalId) {
+        setIntervalId(setInterval(() => {
         setTimeRemaining(prevState => prevState - intervalTime), intervalTime * 1000
-        console.log("interval")
       }))
+      }
     }
     else {
       console.log("intervalid", intervalId)
       clearTimeout(timerId)
+      setTimerId(null)
       clearInterval(intervalId)
-      setTimeRemaining(0)
+      setIntervalId(null)
+      // setTimeRemaining(0)
     }
   }, [enJuego])
 
