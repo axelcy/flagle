@@ -3,99 +3,57 @@ import { Button, Form, ProgressBar } from 'react-bootstrap'
 import './App.css'
 import useFetch from './hooks/useFetch'
 function App() {
-  const time = 5 // 30
-  const intervalTime = 0.01
-
   const [listaBanderas, setListaBanderas] = useState([])
   const [banderaActual, setBanderaActual] = useState()
-  const [enJuego, setEnJuego] = useState(true)
-  const [timeRemaining, setTimeRemaining] = useState(time)
+  const [enJuego, setEnJuego] = useState(null)
   const [puntos, setPuntos] = useState(0)
-  const [progressVariant, setProgressVariant] = useState('success')
-  const form = useRef()
   const mainInput = useRef()
+  const [cheats, setCheats] = useState(false)
+  const handleSurrender = () => {
+    setEnJuego(false)
+    setPuntos(0)
+  }
 
-  const handleSurrender = () => setEnJuego(false)
-  // const handleChange = e => setTime(e.target.value)
-  const handleSubmit = () => {
-    if (!banderaActual) return
-    form.current.preventDefault()
-    if (mainInput.current.value == banderaActual.name) {
-      setPuntos(prevState => prevState + timeRemaining)
-      setEnJuego(false)
+  const handleRefresh = (bandera) => {
+    const newBandera = listaBanderas[Math.floor(Math.random() * listaBanderas.length)]
+    if (bandera) setBanderaActual(bandera)
+    else setBanderaActual(newBandera)
+    if (!enJuego) setEnJuego(true)
+    if (cheats) mainInput.current.placeholder = newBandera.name
+  }
+  const handleSubmit = e => {
+    e.preventDefault()
+    if (mainInput.current.value.toUpperCase() == banderaActual.name.toUpperCase()) {
+      mainInput.current.value = null
+      setPuntos(prevState => prevState + 1)
+      handleRefresh()
     }
   }
-  // document.addEventListener('keydown', e => {
-  //   if (e.key === 'Enter' && enJuego) {
-  //     e.preventDefault()
-  //     handleSubmit(e)
-  //   }
-  // })
-
-  const elegirBandera = (num) => {
-    if (num) setBanderaActual(num)
-    else setBanderaActual(listaBanderas[Math.floor(Math.random() * listaBanderas.length)])
-    setEnJuego(true)
+  const handleClick = () => {
+    if (!cheats) mainInput.current.placeholder = banderaActual.name
+    else mainInput.current.placeholder = ''
+    setCheats(!cheats)
   }
   // ---------------------------------------------------------------------------
   useEffect(() => async() => {
-    const {data} = await useFetch()
+    const { data } = await useFetch()
     setListaBanderas(data)
-    elegirBandera(data[Math.floor(Math.random() * data.length)])
+    let banderaRandom = data[Math.floor(Math.random() * data.length)]
+    handleRefresh(banderaRandom)
+    setEnJuego(true)
   }, [])
 
-  const [timerId, setTimerId] = useState()
-  const [intervalId, setIntervalId] = useState()
-  useEffect(() => {
-    if (enJuego) {
-      setTimeRemaining(time)
-      setTimerId(setTimeout(() => setEnJuego(false), time * 1000))
-      if (timeRemaining > 0 && !intervalId) {
-        setIntervalId(setInterval(() => {
-        setTimeRemaining(prevState => prevState - intervalTime), intervalTime * 1000
-      }))
-      }
-    }
-    else {
-      console.log("intervalid", intervalId)
-      clearTimeout(timerId)
-      setTimerId(null)
-      clearInterval(intervalId)
-      setIntervalId(null)
-      // setTimeRemaining(0)
-    }
-  }, [enJuego])
-
-  useEffect(() => {
-    if (timeRemaining == time) setProgressVariant('success')
-    if (timeRemaining <= time * 0.7) setProgressVariant('warning')
-    if (timeRemaining <= time * 0.3) setProgressVariant('danger')
-    if (timeRemaining <= time * 0.1) setProgressVariant('dark')
-
-    // if (timeRemaining < 0) setTimeRemaining(0)
-    if (timeRemaining === 0) {
-      setEnJuego(false)
-      console.log('se acabo el tiempo')
-    }
-  }, [timeRemaining])
-
-  const progressLabeel = <h6>{Math.floor(timeRemaining)}</h6>
   return (
     <section className='app-container'>
-      <h1>hola weones</h1>
-      <Form onSubmit={handleSubmit} ref={form}>
-        <Form.Label>Tiempo</Form.Label>
-        {/* <Form.Control type="text" placeholder="First name" value={time} disabled={enJuego} onChange={handleChange}/> */}
-        
-          <Form.Range value={timeRemaining} max={time} min={0 + intervalTime} disabled step={intervalTime} />
-        <ProgressBar now={timeRemaining} max={time} min={0 + intervalTime} variant={progressVariant} animated label={progressLabeel} />
-        <br></br>
-        {banderaActual && <img src={banderaActual.flag} alt={banderaActual.name} />}
-        {banderaActual && <Form.Control type="text" placeholder={banderaActual.name} ref={mainInput}/>}
-        {enJuego && <Button variant="primary" onClick={handleSurrender}>Rendirse</Button>}
-        <Button variant='secondary' onClick={() => elegirBandera()} >Recargar</Button>
-        <Button variant='secondary' type='submit' disabled={!enJuego} >Submit</Button>
-        <h3>{!enJuego && 'Respuesta: ' + banderaActual.name}</h3>
+      <h1>Racha: {puntos}</h1>
+      <Button variant='danger' onClick={handleClick}>Toggle cheats</Button>
+      <Form onSubmit={handleSubmit} className='form1'>
+        {banderaActual && <img src={banderaActual.flag} alt={'banderaActual'} />}
+        {banderaActual && <Form.Control type="text" disabled={!enJuego} ref={mainInput}/>}
+        {enJuego ? <Button variant="danger" onClick={handleSurrender}>Rendirse</Button> :
+        <Button variant="warning" onClick={() => handleRefresh()}>Volver a jugar</Button>}
+        <Button variant='success' type='submit' disabled={!enJuego} >Submit</Button>
+        {banderaActual && <h3 className='respuesta'>{!enJuego && 'Respuesta: ' + banderaActual.name}</h3>}
       </Form>
     </section>
   )
