@@ -50,3 +50,6 @@ input[type="range"]::-webkit-slider-runnable-track {
   top: 10px;
   left: 10px;
 }
+.contador{
+  background-color: red;
+}
