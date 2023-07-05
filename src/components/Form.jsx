@@ -16,7 +16,11 @@ const Form = ({ handleSubmit, banderaActual, enJuego, mainInput, handleRefresh, 
 }
 
 const FromProps = {
-    counter: PropTypes.number,
+    handleSubmit: PropTypes.func, 
+    banderaActual: PropTypes.object, 
+    enJuego: PropTypes.bool,  
+    handleRefresh: PropTypes.func, 
+    handleSurrender: PropTypes.func
 }
 
 export default Form
