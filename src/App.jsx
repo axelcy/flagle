@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Button, Form, ProgressBar } from 'react-bootstrap' 
+import { Button } from 'react-bootstrap' 
 import './App.css'
+import Timer from './components/Timer'
+import Form from './components/Form'
 import useFetch from './hooks/useFetch'
 function App() {
   const [listaBanderas, setListaBanderas] = useState([])
@@ -65,7 +67,7 @@ function App() {
     if (refInstance.current) clearInterval(refInstance.current)
     let id = setInterval(() => initCounter(e), 1000)
     refInstance.current = id
-  };
+  }
   let voidTime = () => {
     let voidZone = new Date()
     voidZone.setSeconds(voidZone.getSeconds() + secondsRemaining)
@@ -74,17 +76,14 @@ function App() {
   return (
     <section className='app-container' id='contador'>
       <h1>Racha: {puntos}</h1>
-      <h1 className="h1 alert alert-info text-center">{counter}</h1>
+      <Timer counter={counter} />
       <Button variant='danger' onClick={handleClick}>Toggle cheats</Button>
-      <Form onSubmit={handleSubmit} className='form1'>
-        {banderaActual && <img src={banderaActual.flag} alt={'banderaActual'} />}
-        {banderaActual && <Form.Control type="text" disabled={!enJuego} ref={mainInput}/>}
-        {enJuego ? <Button variant="danger" onClick={handleSurrender}>Rendirse</Button> :
-        <Button variant="warning" onClick={() => handleRefresh()}>Volver a jugar</Button>}
-        <Button variant='success' type='submit' disabled={!enJuego} >Submit</Button>
-        {banderaActual && <h3 className='respuesta'>{!enJuego && 'Respuesta: ' + banderaActual.name}</h3>}
-      </Form>
-      
+      <Form handleSubmit={handleSubmit} 
+        handleRefresh={handleRefresh} 
+        handleSurrender={handleSurrender} 
+        banderaActual={banderaActual} 
+        enJuego={enJuego} 
+        mainInput={mainInput} />
     </section>
   )
 }
